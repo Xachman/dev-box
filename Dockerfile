@@ -19,14 +19,22 @@ apt-get -y autoremove && \
 rm -rf /var/lib/apt/lists/* && \
 git clone https://github.com/krishnasrinivas/wetty /opt/wetty && \
 cd /opt/wetty && npm install && \
-sed -i 's/<VirtualHost \*:80>/<VirtualHost \*:8000>/g' /etc/apache2/sites-available/000-default.conf
+sed -i 's/<VirtualHost \*:80>/<VirtualHost \*:8000>/g' /etc/apache2/sites-available/000-default.conf && \
+sed -i "s/Listen 80/Listen 8000/g" /etc/apache2/ports.conf
+
+RUN curl -fsSL get.docker.com -o /opt/get-docker.sh && sudo sh /opt/get-docker.sh
+
+VOLUME /projects
+
+COPY ./entrypoint.sh /usr/local/bin
+COPY ./bash/start_container.sh /usr/local/bin/start_container
+RUN chmod +x /usr/local/bin/entrypoint.sh;
+RUN chmod +x /usr/local/bin/start_container;
 
 USER user
 
-COPY ./entrypoint.sh /
-
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 WORKDIR /app
 
-CMD node /opt/wetty -p 3000; /usr/sbin/apache2 -D FOREGROUND
+CMD sudo service apache2 start && node /opt/wetty -p 3000 
