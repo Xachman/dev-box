@@ -1,0 +1,5 @@
+image: xachman/cakephp3
+volume: /projects
+project_dir: /projects
+ports:
+  - 80
