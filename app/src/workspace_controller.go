@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,14 +17,12 @@ type WorkspaceController struct {
 	DataDir string
 }
 
-func (ws *WorkspaceController) StartContainer(w http.ResponseWriter, r *http.Request) {
+func (wsc *WorkspaceController) StartContainer(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		c := Container{
-			Image: "test",
-			Path:  "/test",
-		}
+		cName := strings.TrimPrefix(r.URL.Path, "/workspaces/start/")
+		ws := wsc.getWorkspace(cName)
 
-		c.Start()
+		ws.Start()
 	} else {
 		fmt.Fprintf(w, "Bad Method")
 	}
@@ -42,6 +41,7 @@ func (wsc *WorkspaceController) Index(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for _, file := range fileList {
+			templateFile, _ := ioutil.ReadFile("./tmpl/workspaces/index.html")
 			if strings.Contains(file, ".yml") {
 				fmt.Println(file)
 				ws := Workspace{}
@@ -53,10 +53,24 @@ func (wsc *WorkspaceController) Index(w http.ResponseWriter, r *http.Request) {
 				if yErr != nil {
 					log.Fatalf("error: %v", err)
 				}
-				fmt.Fprintf(w, "%s <a href=\"\"", ws.Name)
+				t, _ := template.New("workspace").Parse(string(templateFile[:]))
+				t.Execute(w, ws)
 			}
 		}
 	} else {
 		fmt.Fprintf(w, "Bad Method")
 	}
+}
+
+func (wsc *WorkspaceController) getWorkspace(workspaceName string) Workspace {
+	ws := Workspace{}
+	fileContents, err := ioutil.ReadFile(fmt.Sprintf("%s/%s.yml", wsc.DataDir, workspaceName))
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	yErr := yaml.Unmarshal(fileContents, &ws)
+	if yErr != nil {
+		log.Fatalf("error: %v", err)
+	}
+	return ws
 }
