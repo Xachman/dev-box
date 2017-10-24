@@ -1,3 +1,4 @@
+name: cakephp3
 image: xachman/cakephp3
 volume: /projects
 project_dir: /projects

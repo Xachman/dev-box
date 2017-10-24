@@ -33,6 +33,10 @@ func startContainer(w http.ResponseWriter, r *http.Request) {
 }
 func main() {
 	http.HandleFunc("/", handler)
-	http.HandleFunc("/start", startContainer)
+	workspaceController := WorkspaceController{
+		DataDir: "../data/workspaces",
+	}
+	http.HandleFunc("/workspaces/start", workspaceController.StartContainer)
+	http.HandleFunc("/workspaces", workspaceController.Index)
 	http.ListenAndServe(":9080", nil)
 }
