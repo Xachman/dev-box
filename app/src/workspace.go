@@ -40,16 +40,41 @@ func (w *Workspace) Start() {
 	args = append(args, fmt.Sprintf("%s/%s:%s", config.GetVolumeDir(), w.Name, w.Volume))
 	args = append(args, fmt.Sprintf("%s", w.Image))
 
-	fmt.Println(strings.Join(args, ", "))
-	cmd := exec.Command("docker", args...)
+	w.runCommand("docker", args)
+}
+
+func (w *Workspace) Stop() {
+	w.runCommand("docker", []string{"stop", w.containerName()})
+}
+func (w *Workspace) Status() string {
+	return strings.TrimSpace(w.runCommand("docker", []string{"inspect", "-f", "{{.State.Status}}", w.containerName()}))
+}
+
+func (w *Workspace) containerName() string {
+	config := GetConfig()
+	return config.GetNamespace() + "_" + w.Name
+}
+func (w *Workspace) runCommand(cmdString string, cmdArgs []string) string {
+	fmt.Printf("%s with args: %s\n", cmdString, cmdArgs)
+	cmd := exec.Command("docker", cmdArgs...)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
-	err := cmd.Run()
+	err := cmd.Start()
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 		os.Exit(1)
 	}
-	fmt.Println(out.String())
+	wErr := cmd.Wait()
+	if wErr != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		os.Exit(1)
+	}
+
+	return out.String()
+}
+
+type WorkspaceStatus struct {
+	Status string
 }

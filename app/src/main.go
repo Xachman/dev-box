@@ -25,6 +25,8 @@ func main() {
 		DataDir: "../data/workspaces",
 	}
 	http.HandleFunc("/workspaces/start/", workspaceController.StartContainer)
+	http.HandleFunc("/workspaces/stop/", workspaceController.StopContainer)
+	http.HandleFunc("/workspaces/status/", workspaceController.ContainerStatus)
 	http.HandleFunc("/workspaces", workspaceController.Index)
 	http.ListenAndServe(":9080", nil)
 }
