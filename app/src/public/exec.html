@@ -1,0 +1,64 @@
+<html>
+    
+    <head>
+    
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+        <script src="//cdn.rawgit.com/chjj/term.js/0b10f6c55d5113d50d0ff94b6c38a46375a5f9a5/src/term.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+        <style>
+            body {
+                background-color: #000;
+            }
+            .terminal {
+                border: #000 solid 5px;
+                font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+                font-size: 11px;
+                color: #f0f0f0;
+                background: #000;
+            }
+            .terminal-cursor {
+                color: #000;
+                background: #f0f0f0;
+            }
+        </style>
+    
+        <script type="text/javascript">
+            $(function() {
+                var websocket = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/workspaces/exec/" + prompt("cid"));
+                websocket.onopen = function(evt) {
+                    var term = new Terminal({
+                        cols: 100,
+                        rows: 30,
+                        screenKeys: true,
+                        useStyle: true,
+                        cursorBlink: true,
+                    });
+                    term.on('data', function(data) {
+                        websocket.send(data);
+                    });
+                    term.on('title', function(title) {
+                        document.title = title;
+                    });
+                    term.open(document.getElementById('container-terminal'));
+                    websocket.onmessage = function(evt) {
+                        term.write(evt.data);
+                    }
+                    websocket.onclose = function(evt) {
+                        term.write("Session terminated");
+                        term.destroy();
+                    }
+                    websocket.onerror = function(evt) {
+                        if (typeof console.log == "function") {
+                            console.log(evt)
+                        }
+                    }
+                }
+            });
+        </script>
+    </head>
+    <div id="container-terminal"></div>
+    
+    </html>
