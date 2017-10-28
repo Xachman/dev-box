@@ -20,27 +20,32 @@ type Workspace struct {
 
 // Start starts Workspaces
 func (w *Workspace) Start() {
-	config := GetConfig()
-	args := []string{}
-	args = append(args, "run")
-	args = append(args, "--name")
-	args = append(args, fmt.Sprintf("%s_%s", config.Namespace, w.Name))
+	if !w.exists() {
+		config := GetConfig()
+		args := []string{}
+		args = append(args, "run")
+		args = append(args, "--name")
+		args = append(args, fmt.Sprintf("%s_%s", config.Namespace, w.Name))
 
-	for _, value := range w.Ports {
-		args = append(args, "-p")
-		args = append(args, fmt.Sprintf("0:%d", value))
+		for _, value := range w.Ports {
+			args = append(args, "-p")
+			args = append(args, fmt.Sprintf("0:%d", value))
+		}
+
+		for key, value := range w.Environment {
+			args = append(args, "-e")
+			args = append(args, fmt.Sprintf("%s=%s", key, value))
+		}
+
+		args = append(args, "-v")
+		args = append(args, fmt.Sprintf("%s/%s:%s", config.GetVolumeDir(), w.Name, w.Volume))
+		args = append(args, fmt.Sprintf("%s", w.Image))
+
+		w.runCommand("docker", args)
+		return
 	}
 
-	for key, value := range w.Environment {
-		args = append(args, "-e")
-		args = append(args, fmt.Sprintf("%s=%s", key, value))
-	}
-
-	args = append(args, "-v")
-	args = append(args, fmt.Sprintf("%s/%s:%s", config.GetVolumeDir(), w.Name, w.Volume))
-	args = append(args, fmt.Sprintf("%s", w.Image))
-
-	w.runCommand("docker", args)
+	w.runCommand("docker", []string{"start", w.containerName()})
 }
 
 func (w *Workspace) Stop() {
@@ -73,6 +78,14 @@ func (w *Workspace) runCommand(cmdString string, cmdArgs []string) string {
 	}
 
 	return out.String()
+}
+
+func (w *Workspace) exists() bool {
+	name := w.runCommand("docker", []string{"ps", "-a", "-f", "name=" + w.containerName(), "--format", "{{.Names}}"})
+	if w.containerName() == strings.TrimSpace(name) {
+		return true
+	}
+	return false
 }
 
 type WorkspaceStatus struct {

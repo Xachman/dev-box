@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -20,6 +19,7 @@ type WorkspaceController struct {
 }
 
 func (wsc *WorkspaceController) StartContainer(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == "POST" {
 		cName := strings.TrimPrefix(r.URL.Path, "/workspaces/start/")
 		ws := wsc.getWorkspace(cName)
@@ -30,6 +30,7 @@ func (wsc *WorkspaceController) StartContainer(w http.ResponseWriter, r *http.Re
 	}
 }
 func (wsc *WorkspaceController) StopContainer(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == "POST" {
 		cName := strings.TrimPrefix(r.URL.Path, "/workspaces/stop/")
 		ws := wsc.getWorkspace(cName)
@@ -41,6 +42,7 @@ func (wsc *WorkspaceController) StopContainer(w http.ResponseWriter, r *http.Req
 }
 
 func (wsc *WorkspaceController) ContainerStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == "GET" {
 		cName := strings.TrimPrefix(r.URL.Path, "/workspaces/status/")
 		ws := wsc.getWorkspace(cName)
@@ -61,6 +63,7 @@ func (wsc *WorkspaceController) ContainerStatus(w http.ResponseWriter, r *http.R
 }
 
 func (wsc *WorkspaceController) Index(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == "GET" {
 		fileList := []string{}
 		err := filepath.Walk(wsc.DataDir, func(path string, f os.FileInfo, err error) error {
@@ -72,13 +75,9 @@ func (wsc *WorkspaceController) Index(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
+		wsm := []Workspace{}
 		for _, file := range fileList {
-			templateFile, _ := ioutil.ReadFile("./tmpl/workspaces/index.html")
 			if strings.Contains(file, ".yml") {
-				wsid := strings.TrimSuffix(filepath.Base(file), ".yml")
-				wss := WorkspaceStatus{}
-				wsc.getJson("http://localhost:9080/workspaces/status/"+wsid, &wss)
-				fmt.Println(wss.Status)
 				ws := Workspace{}
 				fileContents, err := ioutil.ReadFile(file)
 				if err != nil {
@@ -88,14 +87,17 @@ func (wsc *WorkspaceController) Index(w http.ResponseWriter, r *http.Request) {
 				if yErr != nil {
 					log.Fatalf("error: %v", err)
 				}
-				t, _ := template.New("workspace").Parse(string(templateFile[:]))
-				type M map[string]string
-				t.Execute(w, M{
-					"Name":   ws.Name,
-					"Status": wss.Status,
-				})
+				wsm = append(wsm, ws)
 			}
+
 		}
+		json, err := json.Marshal(wsm)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(json)
 	} else {
 		fmt.Fprintf(w, "Bad Method")
 	}
