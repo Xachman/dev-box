@@ -37,4 +37,4 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 WORKDIR /app
 
-CMD sudo service apache2 start && node /opt/wetty -p 3000 
+CMD sudo service apache2 start && npm start 
