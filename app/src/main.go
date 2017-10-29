@@ -10,9 +10,8 @@ func main() {
 	workspaceController := WorkspaceController{
 		DataDir: "../data/workspaces",
 	}
-	consoleController := ConsoleController{}
 
-	http.Handle("/workspaces/exec/", websocket.Handler(consoleController.ExecContainer))
+	http.Handle("/workspaces/exec/", websocket.Handler(workspaceController.ExecContainer))
 	http.HandleFunc("/workspaces/start/", workspaceController.StartContainer)
 	http.HandleFunc("/workspaces/stop/", workspaceController.StopContainer)
 	http.HandleFunc("/workspaces/status/", workspaceController.ContainerStatus)

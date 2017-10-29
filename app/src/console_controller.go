@@ -2,52 +2,20 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"golang.org/x/net/websocket"
 )
 
 var host = flag.String("host", "192.168.1.150:2375", "Docker host")
 
 type ConsoleController struct {
-}
-
-func (c *ConsoleController) ExecContainer(ws *websocket.Conn) {
-	container := ws.Request().URL.Path[len("/workspaces/exec/"):]
-	fmt.Println(container)
-	if container == "" {
-		ws.Write([]byte("Container does not exist"))
-		return
-	}
-	type stuff struct {
-		Id string
-	}
-	var s stuff
-	params := bytes.NewBufferString("{\"AttachStdin\":true,\"AttachStdout\":true,\"AttachStderr\":true,\"Tty\":true,\"Cmd\":[\"/bin/bash\"]}")
-	resp, err := http.Post("http://"+*host+"/containers/"+container+"/exec", "application/json", params)
-	if err != nil {
-		panic(err)
-	}
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-	json.Unmarshal([]byte(data), &s)
-	if err := hijack(*host, "POST", "/exec/"+s.Id+"/start", true, ws, ws, ws, nil, nil); err != nil {
-		panic(err)
-	}
-	fmt.Println("Connection!")
-	fmt.Println(ws)
-	spew.Dump(ws)
 }
 
 func hijack(addr, method, path string, setRawTerminal bool, in io.ReadCloser, stdout, stderr io.Writer, started chan io.Closer, data interface{}) error {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,6 +11,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
+	"golang.org/x/net/websocket"
 
 	"gopkg.in/yaml.v2"
 )
@@ -125,6 +129,37 @@ func (wsc *WorkspaceController) getWorkspace(workspaceName string) Workspace {
 		log.Fatalf("error: %v", err)
 	}
 	return ws
+}
+
+func (wsc *WorkspaceController) ExecContainer(w *websocket.Conn) {
+	containerName := w.Request().URL.Path[len("/workspaces/exec/"):]
+	ws := wsc.getWorkspace(containerName)
+	container := ws.getContainerId()
+	fmt.Println(container)
+	if container == "" {
+		w.Write([]byte("Container does not exist"))
+		return
+	}
+	type stuff struct {
+		Id string
+	}
+	var s stuff
+	params := bytes.NewBufferString("{\"AttachStdin\":true,\"AttachStdout\":true,\"AttachStderr\":true,\"Tty\":true,\"Cmd\":[\"/bin/bash\"]}")
+	resp, err := http.Post("http://"+*host+"/containers/"+container+"/exec", "application/json", params)
+	if err != nil {
+		panic(err)
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	json.Unmarshal([]byte(data), &s)
+	if err := hijack(*host, "POST", "/exec/"+s.Id+"/start", true, w, w, w, nil, nil); err != nil {
+		panic(err)
+	}
+	fmt.Println("Connection!")
+	fmt.Println(ws)
+	spew.Dump(ws)
 }
 
 func (wsc *WorkspaceController) getJson(url string, target interface{}) error {

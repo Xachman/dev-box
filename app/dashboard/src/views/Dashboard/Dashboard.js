@@ -5,7 +5,9 @@ class Dashboard extends Component {
   constructor(props) {
     super(props)
 
-    this.state = {workspaces:[]}
+    this.state = {
+      workspaces:[]
+    }
   }
   componentDidMount() {
     this.getWorkspaces();

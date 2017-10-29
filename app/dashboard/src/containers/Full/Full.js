@@ -8,8 +8,17 @@ import Aside from '../../components/Aside/';
 import Footer from '../../components/Footer/';
 
 import Dashboard from '../../views/Dashboard/';
+import Terminal from '../../views/Terminal/Terminal.js';
 
 class Full extends Component {
+  constructor() {
+    super()
+
+    this.state = {
+      workspaceId: 0
+    }
+  }
+
   render() {
     return (
       <div className="app">
@@ -20,7 +29,8 @@ class Full extends Component {
             <Breadcrumb />
             <Container fluid>
               <Switch>
-                <Route path="/dashboard" name="Dashboard" component={Dashboard}/>
+                <Route path="/dashboard" name="Dashboard" component={Dashboard} />
+                <Route path="/terminal/:name" name="Terminal" component={Terminal}/>
                 <Redirect from="/" to="/dashboard"/>
               </Switch>
             </Container>

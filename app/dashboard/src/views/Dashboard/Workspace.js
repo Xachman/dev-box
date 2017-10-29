@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 class Workspace extends Component {
     constructor(props) {
@@ -38,6 +39,7 @@ class Workspace extends Component {
             <button className="start btn btn-primary" onClick={this.startContainer.bind(this)}>Start</button> &nbsp;
             <button className="stop btn btn-primary" onClick={this.stopContainer.bind(this)}>Stop</button> &nbsp;
             <button className="stop btn btn-primary" onClick={this.removeContainer.bind(this)}>Remove</button> &nbsp;
+            <Link to={"/terminal/"+this.state.name} className="stop btn btn-primary" >Terminal</Link>
         </div>
         )
     }
