@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 )
@@ -24,6 +23,7 @@ func (w *Workspace) Start() {
 		config := GetConfig()
 		args := []string{}
 		args = append(args, "run")
+		args = append(args, "-d")
 		args = append(args, "--name")
 		args = append(args, fmt.Sprintf("%s_%s", config.Namespace, w.Name))
 
@@ -47,19 +47,25 @@ func (w *Workspace) Start() {
 
 	w.runCommand("docker", []string{"start", w.containerName()})
 }
-
+func (w *Workspace) remove() {
+	w.runCommand("docker", []string{"rm", "-f", w.containerName()})
+}
 func (w *Workspace) Stop() {
 	w.runCommand("docker", []string{"stop", w.containerName()})
 }
 func (w *Workspace) Status() string {
-	return strings.TrimSpace(w.runCommand("docker", []string{"inspect", "-f", "{{.State.Status}}", w.containerName()}))
+	res, err := w.runCommand("docker", []string{"inspect", "-f", "{{.State.Status}}", w.containerName()})
+	if err != nil {
+		return "not created"
+	}
+	return strings.TrimSpace(res)
 }
 
 func (w *Workspace) containerName() string {
 	config := GetConfig()
 	return config.GetNamespace() + "_" + w.Name
 }
-func (w *Workspace) runCommand(cmdString string, cmdArgs []string) string {
+func (w *Workspace) runCommand(cmdString string, cmdArgs []string) (string, error) {
 	fmt.Printf("%s with args: %s\n", cmdString, cmdArgs)
 	cmd := exec.Command("docker", cmdArgs...)
 	var out bytes.Buffer
@@ -68,20 +74,18 @@ func (w *Workspace) runCommand(cmdString string, cmdArgs []string) string {
 	cmd.Stderr = &stderr
 	err := cmd.Start()
 	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		os.Exit(1)
+		return "", err
 	}
 	wErr := cmd.Wait()
 	if wErr != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		os.Exit(1)
+		return "", wErr
 	}
 
-	return out.String()
+	return out.String(), nil
 }
 
 func (w *Workspace) exists() bool {
-	name := w.runCommand("docker", []string{"ps", "-a", "-f", "name=" + w.containerName(), "--format", "{{.Names}}"})
+	name, _ := w.runCommand("docker", []string{"ps", "-a", "-f", "name=" + w.containerName(), "--format", "{{.Names}}"})
 	if w.containerName() == strings.TrimSpace(name) {
 		return true
 	}

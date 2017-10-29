@@ -26,6 +26,9 @@ class Workspace extends Component {
     stopContainer() {
         fetch("http://192.168.1.150:9080/workspaces/stop/"+this.state.name, {method:"POST"}).then(() => this.getStatus(this.state.name))
     }
+    removeContainer() {
+        fetch("http://192.168.1.150:9080/workspaces/remove/"+this.state.name, {method:"POST"}).then(() => this.getStatus(this.state.name))
+    }
     render() {
         console.log("state", this.state)
         return (
@@ -34,6 +37,7 @@ class Workspace extends Component {
             <span className="status">{this.state.status}</span> &nbsp;
             <button className="start btn btn-primary" onClick={this.startContainer.bind(this)}>Start</button> &nbsp;
             <button className="stop btn btn-primary" onClick={this.stopContainer.bind(this)}>Stop</button> &nbsp;
+            <button className="stop btn btn-primary" onClick={this.removeContainer.bind(this)}>Remove</button> &nbsp;
         </div>
         )
     }

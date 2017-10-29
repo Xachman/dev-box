@@ -41,6 +41,17 @@ func (wsc *WorkspaceController) StopContainer(w http.ResponseWriter, r *http.Req
 	}
 }
 
+func (wsc *WorkspaceController) RemoveContainer(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method == "POST" {
+		cName := strings.TrimPrefix(r.URL.Path, "/workspaces/remove/")
+		ws := wsc.getWorkspace(cName)
+
+		ws.remove()
+	} else {
+		fmt.Fprintf(w, "Bad Method")
+	}
+}
 func (wsc *WorkspaceController) ContainerStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == "GET" {
