@@ -1,0 +1,2 @@
+volumeDir: "/path/to/volumes/on/host"
+namespace: "container_namespace"
