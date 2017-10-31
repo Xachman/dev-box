@@ -9,13 +9,15 @@ import (
 )
 
 type Config struct {
-	VolumeDir string `yaml:"volumeDir"`
-	Namespace string
+	VolumeDir  string `yaml:"volumeDir"`
+	Namespace  string
+	DockerHost string `yaml:"dockerHost"`
+	DockerPort string `yaml:"dockerPort"`
 }
 
 func GetConfig() Config {
 	config := Config{}
-	fileContents, err := ioutil.ReadFile(fmt.Sprintf("../data/config.yml"))
+	fileContents, err := ioutil.ReadFile(fmt.Sprintf("/app/data/config.yml"))
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -32,4 +34,11 @@ func (c *Config) GetVolumeDir() string {
 }
 func (c *Config) GetNamespace() string {
 	return c.Namespace
+}
+
+func (c *Config) GetHost() string {
+	return c.DockerHost
+}
+func (c *Config) GetPort() string {
+	return c.DockerPort
 }

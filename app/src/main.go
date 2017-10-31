@@ -6,9 +6,11 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+var config = GetConfig()
+
 func main() {
 	workspaceController := WorkspaceController{
-		DataDir: "../data/workspaces",
+		DataDir: "/app/data/workspaces",
 	}
 
 	http.Handle("/workspaces/exec/", websocket.Handler(workspaceController.ExecContainer))

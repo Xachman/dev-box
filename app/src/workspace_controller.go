@@ -19,7 +19,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var host = flag.String("host", "192.168.1.150:2375", "Docker host")
+var host = flag.String("host", config.GetHost()+":"+config.GetPort(), "Docker host")
 
 type WorkspaceController struct {
 	DataDir string
