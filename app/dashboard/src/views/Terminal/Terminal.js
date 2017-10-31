@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-
+import Config from "../../Config"
 class TerminalComponent extends Component {
   constructor(props) {
     super(props)
@@ -8,7 +8,7 @@ class TerminalComponent extends Component {
     this.state = {name: props.match.params.name}
   }
   componentDidMount() {
-            var websocket = new WebSocket("ws://192.168.1.150:9080/workspaces/exec/"+this.state.name);
+            var websocket = new WebSocket("ws://"+Config.host()+":"+Config.port()+"/workspaces/exec/"+this.state.name);
             websocket.onopen = function(evt) {
                 console.log(Terminal)
                 var term = new Terminal({

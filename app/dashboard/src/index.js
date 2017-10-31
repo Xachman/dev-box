@@ -14,6 +14,10 @@ import '../scss/core/_dropdown-menu-right.scss'
 
 // Containers
 import Full from './containers/Full/'
+const Config = {
+  devBoxHost: "192.168.1.151",
+  devBoxPort: 9080
+}
 
 ReactDOM.render((
   <HashRouter>

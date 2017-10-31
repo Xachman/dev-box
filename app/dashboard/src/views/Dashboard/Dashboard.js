@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Workspace from './Workspace';
+import Config from "../../Config"
 
 class Dashboard extends Component {
   constructor(props) {
@@ -14,7 +15,7 @@ class Dashboard extends Component {
   }
 
   getWorkspaces() {
-    fetch("http://192.168.1.150:9080/workspaces").then((response) => response.json())
+    fetch(Config.dockerHostUrl()+"workspaces").then((response) => response.json())
     .then((responseJson) => {
       this.setState({ workspaces: responseJson });
     })

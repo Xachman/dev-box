@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
+import Config from "../../Config"
+
 class Workspace extends Component {
     constructor(props) {
         super(props)
@@ -10,25 +12,26 @@ class Workspace extends Component {
             name: props.name,
             status: ""
         }
+        console.log(new Config())
         this.getStatus(this.state.name)
     }
     getStatus(id) {
-        fetch("http://192.168.1.150:9080/workspaces/status/"+id).then((response) => response.json())
+        fetch(Config.dockerHostUrl()+"workspaces/status/"+id).then((response) => response.json())
         .then((responseJson) => {
         this.setState({ status: responseJson.Status });
         })
 
     }
     startContainer() {
-        fetch("http://192.168.1.150:9080/workspaces/start/"+this.state.name,{method: "POST"}).then(() => {
+        fetch(Config.dockerHostUrl()+"workspaces/start/"+this.state.name,{method: "POST"}).then(() => {
             this.getStatus(this.state.name)
         })
     }
     stopContainer() {
-        fetch("http://192.168.1.150:9080/workspaces/stop/"+this.state.name, {method:"POST"}).then(() => this.getStatus(this.state.name))
+        fetch(Config.dockerHostUrl()+"workspaces/stop/"+this.state.name, {method:"POST"}).then(() => this.getStatus(this.state.name))
     }
     removeContainer() {
-        fetch("http://192.168.1.150:9080/workspaces/remove/"+this.state.name, {method:"POST"}).then(() => this.getStatus(this.state.name))
+        fetch(Config.dockerHostUrl()+"workspaces/remove/"+this.state.name, {method:"POST"}).then(() => this.getStatus(this.state.name))
     }
     render() {
         console.log("state", this.state)
