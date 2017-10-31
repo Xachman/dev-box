@@ -8,7 +8,7 @@ import Aside from '../../components/Aside/';
 import Footer from '../../components/Footer/';
 
 import Dashboard from '../../views/Dashboard/';
-import Terminal from '../../views/Terminal/Terminal.js';
+import Terminal from '../../views/Terminal/';
 
 class Full extends Component {
   constructor() {

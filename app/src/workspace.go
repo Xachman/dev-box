@@ -67,8 +67,8 @@ func (w *Workspace) containerName() string {
 }
 func (w *Workspace) getContainerId() string {
 	//docker ps -aqf "name=
-	res, _ := w.runCommand("docker", []string{"ps", "-aqf", w.containerName()})
-	return res
+	res, _ := w.runCommand("docker", []string{"ps", "-aqf", "name=" + w.containerName()})
+	return strings.TrimSpace(res)
 }
 func (w *Workspace) runCommand(cmdString string, cmdArgs []string) (string, error) {
 	fmt.Printf("%s with args: %s\n", cmdString, cmdArgs)

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -17,6 +18,8 @@ import (
 
 	"gopkg.in/yaml.v2"
 )
+
+var host = flag.String("host", "192.168.1.150:2375", "Docker host")
 
 type WorkspaceController struct {
 	DataDir string
@@ -135,11 +138,11 @@ func (wsc *WorkspaceController) ExecContainer(w *websocket.Conn) {
 	containerName := w.Request().URL.Path[len("/workspaces/exec/"):]
 	ws := wsc.getWorkspace(containerName)
 	container := ws.getContainerId()
-	fmt.Println(container)
 	if container == "" {
 		w.Write([]byte("Container does not exist"))
 		return
 	}
+	fmt.Println("container ok")
 	type stuff struct {
 		Id string
 	}
@@ -149,6 +152,7 @@ func (wsc *WorkspaceController) ExecContainer(w *websocket.Conn) {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("http://"+*host+"/containers/"+container+"/exec", resp)
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)

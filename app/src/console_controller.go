@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"io"
 	"net"
@@ -12,8 +11,6 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 )
-
-var host = flag.String("host", "192.168.1.150:2375", "Docker host")
 
 type ConsoleController struct {
 }
