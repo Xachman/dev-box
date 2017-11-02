@@ -16,7 +16,6 @@ type ConsoleController struct {
 }
 
 func hijack(addr, method, path string, setRawTerminal bool, in io.ReadCloser, stdout, stderr io.Writer, started chan io.Closer, data interface{}) error {
-
 	params := bytes.NewBufferString("{\"Detach\": false, \"Tty\": true}")
 	req, err := http.NewRequest(method, path, params)
 	if err != nil {
@@ -28,7 +27,7 @@ func hijack(addr, method, path string, setRawTerminal bool, in io.ReadCloser, st
 	req.Header.Set("Upgrade", "tcp")
 	req.Host = addr
 
-	dial, err := net.Dial("tcp", addr)
+	dial, err := net.Dial("unix", addr)
 	// When we set up a TCP connection for hijack, there could be long periods
 	// of inactivity (a long running command with no output) that in certain
 	// network setups may cause ECONNTIMEOUT, leaving the client in an unknown

@@ -2,11 +2,13 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -135,6 +137,13 @@ func (wsc *WorkspaceController) getWorkspace(workspaceName string) Workspace {
 }
 
 func (wsc *WorkspaceController) ExecContainer(w *websocket.Conn) {
+	httpc := http.Client{
+		Transport: &http.Transport{
+			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+				return net.Dial("unix", "/var/run/docker.sock")
+			},
+		},
+	}
 	containerName := w.Request().URL.Path[len("/workspaces/exec/"):]
 	ws := wsc.getWorkspace(containerName)
 	container := ws.getContainerId()
@@ -148,7 +157,7 @@ func (wsc *WorkspaceController) ExecContainer(w *websocket.Conn) {
 	}
 	var s stuff
 	params := bytes.NewBufferString("{\"AttachStdin\":true,\"AttachStdout\":true,\"AttachStderr\":true,\"Tty\":true,\"Cmd\":[\"/bin/bash\"]}")
-	resp, err := http.Post("http://"+*host+"/containers/"+container+"/exec", "application/json", params)
+	resp, err := httpc.Post("http://unix/containers/"+container+"/exec", "application/json", params)
 	if err != nil {
 		panic(err)
 	}
@@ -158,7 +167,7 @@ func (wsc *WorkspaceController) ExecContainer(w *websocket.Conn) {
 		panic(err)
 	}
 	json.Unmarshal([]byte(data), &s)
-	if err := hijack(*host, "POST", "/exec/"+s.Id+"/start", true, w, w, w, nil, nil); err != nil {
+	if err := hijack("/var/run/docker.sock", "POST", "/exec/"+s.Id+"/start", true, w, w, w, nil, nil); err != nil {
 		panic(err)
 	}
 	fmt.Println("Connection!")
