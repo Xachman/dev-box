@@ -23,7 +23,7 @@ sed -i 's/<VirtualHost \*:80>/<VirtualHost \*:8000>/g' /etc/apache2/sites-availa
 sed -i "s/Listen 80/Listen 8000/g" /etc/apache2/ports.conf
 
 RUN curl -fsSL get.docker.com -o /opt/get-docker.sh && sudo sh /opt/get-docker.sh
-
+RUN usermod -aG docker user
 VOLUME /projects
 
 COPY ./entrypoint.sh /usr/local/bin
@@ -31,10 +31,10 @@ COPY ./bash/start_container.sh /usr/local/bin/start_container
 RUN chmod +x /usr/local/bin/entrypoint.sh;
 RUN chmod +x /usr/local/bin/start_container;
 
-USER user
-
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
-WORKDIR /app
+WORKDIR /dashboard
 
-CMD sudo service apache2 start && npm start 
+USER user
+
+CMD cat /home/user/.ssh/id_rsa & /app/src/main & npm start
