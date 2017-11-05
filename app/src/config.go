@@ -17,7 +17,7 @@ type Config struct {
 
 func GetConfig() Config {
 	config := Config{}
-	fileContents, err := ioutil.ReadFile(fmt.Sprintf("/app/data/config.yml"))
+	fileContents, err := ioutil.ReadFile(fmt.Sprintf(appPath + "/data/config.yml"))
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

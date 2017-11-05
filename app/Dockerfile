@@ -5,5 +5,6 @@ RUN apt-get update && apt-get install -y curl && \
     rm -rf /var/lib/apt/lists/*
 
 COPY ./src/main /app/main
+COPY ./public /app/public
 
 CMD /app/main

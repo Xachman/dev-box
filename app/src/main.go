@@ -2,15 +2,22 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"golang.org/x/net/websocket"
 )
 
-var config = GetConfig()
+var appPath = "/app"
+var config Config
 
 func main() {
+	if len(os.Args) > 1 {
+		appPath = os.Args[1]
+	}
+
+	config = GetConfig()
 	workspaceController := WorkspaceController{
-		DataDir: "/app/data/workspaces",
+		DataDir: appPath + "/data/workspaces",
 	}
 
 	http.Handle("/workspaces/exec/", websocket.Handler(workspaceController.ExecContainer))
@@ -19,6 +26,6 @@ func main() {
 	http.HandleFunc("/workspaces/status/", workspaceController.ContainerStatus)
 	http.HandleFunc("/workspaces/remove/", workspaceController.RemoveContainer)
 	http.HandleFunc("/workspaces", workspaceController.Index)
-	http.Handle("/", http.FileServer(http.Dir("./public")))
+	http.Handle("/", http.FileServer(http.Dir(appPath+"/public")))
 	http.ListenAndServe(":9080", nil)
 }
