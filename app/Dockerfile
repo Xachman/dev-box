@@ -1,10 +1,17 @@
-FROM debian:jessie
-
-RUN apt-get update && apt-get install -y curl && \
-    curl -fsSL get.docker.com -o /opt/get-docker.sh && sh /opt/get-docker.sh && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY ./src/main /app/main
-COPY ./public /app/public
-
-CMD /app/main
+# Base this docker container off the official golang docker image.
+# Docker containers inherit everything from their base.
+FROM golang
+# Create a directory inside the container to store all our application and then make it the working directory.
+RUN mkdir -p /go/src/app
+WORKDIR /go/src/app
+# Copy the example-app directory (where the Dockerfile lives) into the container.
+COPY ./src /go/src/app
+# Download and install any required third party dependencies into the container.
+RUN go-wrapper download
+RUN go-wrapper install
+# Set the PORT environment variable inside the container
+ENV PORT 8080
+# Expose port 8080 to the host so we can access our application
+EXPOSE 8080
+# Now tell Docker what command to run when the container starts
+CMD ["go-wrapper", "run"]

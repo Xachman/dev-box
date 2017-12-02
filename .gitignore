@@ -1,2 +1,4 @@
 node_modules/
 app/data/config.yml
+default.prf
+docker-sync.yml

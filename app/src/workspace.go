@@ -70,24 +70,22 @@ func (w *Workspace) getContainerId() string {
 	res, _ := w.runCommand("docker", []string{"ps", "-aqf", "name=" + w.containerName()})
 	return strings.TrimSpace(res)
 }
-func (w *Workspace) runCommand(cmdString string, cmdArgs []string) (string, error) {
-	fmt.Printf("%s with args: %s\n", cmdString, cmdArgs)
-	cmd := exec.Command("docker", cmdArgs...)
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err := cmd.Start()
-	if err != nil {
-		return "", err
-	}
-	wErr := cmd.Wait()
-	if wErr != nil {
-		return "", wErr
+func (w *Workspace) runCommand(url string, cmdArgs []string, method string) (string, error) {
+	httpc := http.Client{
+		Transport: &http.Transport{
+			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+				return net.Dial("unix", "/var/run/docker.sock")
+			},
+		},
 	}
 
-	return out.String(), nil
+	switch(method) {
+	case "post":
+		httpc.post("http://unix"+url, "application/json", params)
+	}
+	
 }
+
 
 func (w *Workspace) exists() bool {
 	name, _ := w.runCommand("docker", []string{"ps", "-a", "-f", "name=" + w.containerName(), "--format", "{{.Names}}"})
