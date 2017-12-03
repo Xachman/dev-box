@@ -25,7 +25,6 @@ func GetConfig() Config {
 	if yErr != nil {
 		log.Fatalf("error: %v", err)
 	}
-	fmt.Printf("Volume dir: %s \n", config.VolumeDir)
 	return config
 }
 
