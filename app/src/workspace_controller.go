@@ -17,8 +17,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"golang.org/x/net/websocket"
-
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var host = flag.String("host", config.GetHost()+":"+config.GetPort(), "Docker host")

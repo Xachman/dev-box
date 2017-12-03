@@ -2,9 +2,10 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
-	"os/exec"
-	"strings"
+	"net"
+	"net/http"
 )
 
 // Workspace as defined
@@ -21,44 +22,49 @@ type Workspace struct {
 func (w *Workspace) Start() {
 	if !w.exists() {
 		config := GetConfig()
-		args := []string{}
-		args = append(args, "run")
-		args = append(args, "-d")
-		args = append(args, "--name")
-		args = append(args, fmt.Sprintf("%s_%s", config.Namespace, w.Name))
+		args := "{"
 
+		args += "\"HostConfig\": {"
 		for _, value := range w.Ports {
-			args = append(args, "-p")
-			args = append(args, fmt.Sprintf("0:%d", value))
+			args += fmt.Sprintf("\"PortBindings\": { \"%d/tcp\": [{ \"HostPort\": \"0\" }] },", value)
 		}
+		args += "\"Binds\": ["
+		args += fmt.Sprintf("\"%s/%s:%s\"", config.GetVolumeDir(), w.Name, w.Volume)
+		args += "]"
+		args += "},"
 
+		args += "\"Env\": ["
+		index := 0
 		for key, value := range w.Environment {
-			args = append(args, "-e")
-			args = append(args, fmt.Sprintf("%s=%s", key, value))
+			if index > 0 {
+				args += ","
+			}
+			index++
+			args += fmt.Sprintf("\"%s=%s\"", key, value)
 		}
+		args += "],"
 
-		args = append(args, "-v")
-		args = append(args, fmt.Sprintf("%s/%s:%s", config.GetVolumeDir(), w.Name, w.Volume))
-		args = append(args, fmt.Sprintf("%s", w.Image))
-
-		w.runCommand("docker", args)
+		args += fmt.Sprintf("\"Image\": \"%s\"", w.Image)
+		args += "}"
+		fmt.Print(args)
+		w.runCommand(fmt.Sprintf("/containers/create?name=%s_%s", config.Namespace, w.Name), args, "post")
 		return
 	}
 
-	w.runCommand("docker", []string{"start", w.containerName()})
+	//w.runCommand("docker", []string{"start", w.containerName()})
 }
 func (w *Workspace) remove() {
-	w.runCommand("docker", []string{"rm", "-f", w.containerName()})
+	//w.runCommand("docker", []string{"rm", "-f", w.containerName()})
 }
 func (w *Workspace) Stop() {
-	w.runCommand("docker", []string{"stop", w.containerName()})
+	//w.runCommand("docker", []string{"stop", w.containerName()})
 }
 func (w *Workspace) Status() string {
-	res, err := w.runCommand("docker", []string{"inspect", "-f", "{{.State.Status}}", w.containerName()})
-	if err != nil {
-		return "not created"
-	}
-	return strings.TrimSpace(res)
+	// res, err := w.runCommand("docker", []string{"inspect", "-f", "{{.State.Status}}", w.containerName()})
+	// if err != nil {
+	// 	return "not created"
+	// }
+	return "not created"
 }
 
 func (w *Workspace) containerName() string {
@@ -67,10 +73,12 @@ func (w *Workspace) containerName() string {
 }
 func (w *Workspace) getContainerId() string {
 	//docker ps -aqf "name=
-	res, _ := w.runCommand("docker", []string{"ps", "-aqf", "name=" + w.containerName()})
-	return strings.TrimSpace(res)
+	//res, _ := w.runCommand("docker", []string{"ps", "-aqf", "name=" + w.containerName()})
+	return "false"
 }
-func (w *Workspace) runCommand(url string, cmdArgs []string, method string) (string, error) {
+func (w *Workspace) runCommand(url string, args string, method string) {
+	///containers/create
+	///containers/(id or name)/start
 	httpc := http.Client{
 		Transport: &http.Transport{
 			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
@@ -78,20 +86,23 @@ func (w *Workspace) runCommand(url string, cmdArgs []string, method string) (str
 			},
 		},
 	}
-
-	switch(method) {
+	params := bytes.NewBufferString(args)
+	switch method {
 	case "post":
-		httpc.post("http://unix"+url, "application/json", params)
+		resp, err := httpc.Post("http://unix"+url, "application/json", params)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Print(resp)
 	}
-	
+
 }
 
-
 func (w *Workspace) exists() bool {
-	name, _ := w.runCommand("docker", []string{"ps", "-a", "-f", "name=" + w.containerName(), "--format", "{{.Names}}"})
-	if w.containerName() == strings.TrimSpace(name) {
-		return true
-	}
+	// name, _ := w.runCommand("docker", []string{"ps", "-a", "-f", "name=" + w.containerName(), "--format", "{{.Names}}"})
+	// if w.containerName() == strings.TrimSpace(name) {
+	// 	return true
+	// }
 	return false
 }
 
