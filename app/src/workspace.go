@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 )
@@ -46,7 +48,7 @@ func (w *Workspace) Start() {
 
 		args += fmt.Sprintf("\"Image\": \"%s\"", w.Image)
 		args += "}"
-		fmt.Print(args)
+		fmt.Println(args)
 		w.runCommand(fmt.Sprintf("/containers/create?name=%s_%s", config.Namespace, w.Name), args, "post")
 		return
 	}
@@ -76,7 +78,7 @@ func (w *Workspace) getContainerId() string {
 	//res, _ := w.runCommand("docker", []string{"ps", "-aqf", "name=" + w.containerName()})
 	return "false"
 }
-func (w *Workspace) runCommand(url string, args string, method string) {
+func (w *Workspace) runCommand(url string, args string, method string) (*APIResponse, error) {
 	///containers/create
 	///containers/(id or name)/start
 	httpc := http.Client{
@@ -91,11 +93,19 @@ func (w *Workspace) runCommand(url string, args string, method string) {
 	case "post":
 		resp, err := httpc.Post("http://unix"+url, "application/json", params)
 		if err != nil {
-			panic(err)
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			apiR := new(APIResponse)
+			json.Unmarshal(body, &apiR)
+			return apiR, err
 		}
-		fmt.Print(resp)
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		apiR := new(APIResponse)
+		json.Unmarshal(body, &apiR)
+		return apiR, nil
 	}
-
+	return nil, nil
 }
 
 func (w *Workspace) exists() bool {
@@ -108,4 +118,8 @@ func (w *Workspace) exists() bool {
 
 type WorkspaceStatus struct {
 	Status string
+}
+
+type APIResponse struct {
+	Message string `json:"message"`
 }
