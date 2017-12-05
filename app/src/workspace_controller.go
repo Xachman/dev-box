@@ -80,6 +80,29 @@ func (wsc *WorkspaceController) ContainerStatus(w http.ResponseWriter, r *http.R
 		fmt.Fprintf(w, "Bad Method")
 	}
 }
+func (wsc *WorkspaceController) PortMaps(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method == "GET" {
+		cName := strings.TrimPrefix(r.URL.Path, "/workspaces/ports/")
+		ws := wsc.getWorkspace(cName)
+		hostport := ws.portmaps()
+		config := GetConfig()
+		port := struct {
+			PortDomain string
+		}{
+			fmt.Sprintf("%s:%s", config.GetHost(), hostport),
+		}
+		json, err := json.Marshal(port)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(json)
+	} else {
+		fmt.Fprintf(w, "Bad Method")
+	}
+}
 
 func (wsc *WorkspaceController) Index(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")

@@ -25,6 +25,7 @@ func main() {
 	http.HandleFunc("/workspaces/stop/", workspaceController.StopContainer)
 	http.HandleFunc("/workspaces/status/", workspaceController.ContainerStatus)
 	http.HandleFunc("/workspaces/remove/", workspaceController.RemoveContainer)
+	http.HandleFunc("/workspaces/ports/", workspaceController.PortMaps)
 	http.HandleFunc("/workspaces", workspaceController.Index)
 	http.Handle("/", http.FileServer(http.Dir(appPath+"/public")))
 	http.ListenAndServe(":9080", nil)

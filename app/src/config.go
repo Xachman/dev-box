@@ -11,7 +11,7 @@ import (
 type Config struct {
 	VolumeDir  string `yaml:"volumeDir"`
 	Namespace  string
-	DockerHost string `yaml:"dockerHost"`
+	Host       string `yaml:"host"`
 	DockerPort string `yaml:"dockerPort"`
 }
 
@@ -36,7 +36,7 @@ func (c *Config) GetNamespace() string {
 }
 
 func (c *Config) GetHost() string {
-	return c.DockerHost
+	return c.Host
 }
 func (c *Config) GetPort() string {
 	return c.DockerPort

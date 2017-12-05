@@ -68,6 +68,14 @@ func (w *Workspace) Stop() {
 func (w *Workspace) startContainer() {
 	w.runCommand(fmt.Sprintf("/containers/%s/start", w.containerName()), "", "post")
 }
+
+func (w *Workspace) portmaps() string {
+	apiR, _ := w.runCommand(fmt.Sprintf("/containers/%s/json", w.containerName()), "", "get")
+	key := fmt.Sprintf("%d/tcp", w.Ports[0])
+	fmt.Println(key)
+	return apiR.NetworkSettings.Ports[key][0].HostPort
+}
+
 func (w *Workspace) Status() string {
 	apiR, _ := w.runCommand(fmt.Sprintf("/containers/%s/json", w.containerName()), "", "get")
 	fmt.Println(apiR.State)
@@ -165,6 +173,11 @@ type APIResponse struct {
 	Message string `json:"message"`
 	State   struct {
 		Status string
+	}
+	NetworkSettings struct {
+		Ports map[string][]struct {
+			HostPort string
+		}
 	}
 	Id string
 }
