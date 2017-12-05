@@ -82,8 +82,10 @@ func (w *Workspace) containerName() string {
 	return config.GetNamespace() + "_" + w.Name
 }
 func (w *Workspace) getContainerId() string {
-	//docker ps -aqf "name=
-	//res, _ := w.runCommand("docker", []string{"ps", "-aqf", "name=" + w.containerName()})
+	apiR, _ := w.runCommand(fmt.Sprintf("/containers/%s/json", w.containerName()), "", "get")
+	if apiR != nil {
+		return apiR.Id
+	}
 	return "false"
 }
 func (w *Workspace) runCommand(url string, args string, method string) (*APIResponse, error) {
@@ -164,4 +166,5 @@ type APIResponse struct {
 	State   struct {
 		Status string
 	}
+	Id string
 }
