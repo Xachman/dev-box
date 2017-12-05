@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 )
 
 // Workspace as defined
@@ -49,23 +50,30 @@ func (w *Workspace) Start() {
 		args += fmt.Sprintf("\"Image\": \"%s\"", w.Image)
 		args += "}"
 		fmt.Println(args)
-		w.runCommand(fmt.Sprintf("/containers/create?name=%s_%s", config.Namespace, w.Name), args, "post")
+		apiR, _ := w.runCommand(fmt.Sprintf("/containers/create?name=%s_%s", config.Namespace, w.Name), args, "post")
+		fmt.Println("Message: " + apiR.Message)
+		w.startContainer()
 		return
 	}
 
-	//w.runCommand("docker", []string{"start", w.containerName()})
+	w.startContainer()
 }
 func (w *Workspace) remove() {
-	//w.runCommand("docker", []string{"rm", "-f", w.containerName()})
+	w.Stop()
+	w.runCommand(fmt.Sprintf("/containers/%s", w.containerName()), "", "delete")
 }
 func (w *Workspace) Stop() {
-	//w.runCommand("docker", []string{"stop", w.containerName()})
+	w.runCommand(fmt.Sprintf("/containers/%s/stop", w.containerName()), "", "post")
+}
+func (w *Workspace) startContainer() {
+	w.runCommand(fmt.Sprintf("/containers/%s/start", w.containerName()), "", "post")
 }
 func (w *Workspace) Status() string {
-	// res, err := w.runCommand("docker", []string{"inspect", "-f", "{{.State.Status}}", w.containerName()})
-	// if err != nil {
-	// 	return "not created"
-	// }
+	apiR, _ := w.runCommand(fmt.Sprintf("/containers/%s/json", w.containerName()), "", "get")
+	fmt.Println(apiR.State)
+	if apiR != nil && strings.TrimSpace(apiR.State.Status) != "" {
+		return apiR.State.Status
+	}
 	return "not created"
 }
 
@@ -88,9 +96,9 @@ func (w *Workspace) runCommand(url string, args string, method string) (*APIResp
 			},
 		},
 	}
-	params := bytes.NewBufferString(args)
 	switch method {
 	case "post":
+		params := bytes.NewBufferString(args)
 		resp, err := httpc.Post("http://unix"+url, "application/json", params)
 		if err != nil {
 			defer resp.Body.Close()
@@ -104,15 +112,46 @@ func (w *Workspace) runCommand(url string, args string, method string) (*APIResp
 		apiR := new(APIResponse)
 		json.Unmarshal(body, &apiR)
 		return apiR, nil
+	case "get":
+		resp, err := httpc.Get("http://unix" + url)
+		if err != nil {
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			apiR := new(APIResponse)
+			json.Unmarshal(body, &apiR)
+			return apiR, err
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		apiR := new(APIResponse)
+		json.Unmarshal(body, &apiR)
+		return apiR, err
+	case "delete":
+		req, err := http.NewRequest("DELETE", "http://unix"+url, nil)
+		if err != nil {
+			panic(err)
+		}
+		resp, err := httpc.Do(req)
+		if err != nil {
+			defer resp.Body.Close()
+			body, _ := ioutil.ReadAll(resp.Body)
+			apiR := new(APIResponse)
+			json.Unmarshal(body, &apiR)
+			return apiR, err
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		apiR := new(APIResponse)
+		json.Unmarshal(body, &apiR)
+		return apiR, err
 	}
 	return nil, nil
 }
-
 func (w *Workspace) exists() bool {
-	// name, _ := w.runCommand("docker", []string{"ps", "-a", "-f", "name=" + w.containerName(), "--format", "{{.Names}}"})
-	// if w.containerName() == strings.TrimSpace(name) {
-	// 	return true
-	// }
+	apiR, _ := w.runCommand(fmt.Sprintf("/containers/%s/json", w.containerName()), "", "get")
+	if apiR != nil && strings.TrimSpace(apiR.Message) == "" {
+		return true
+	}
 	return false
 }
 
@@ -122,4 +161,7 @@ type WorkspaceStatus struct {
 
 type APIResponse struct {
 	Message string `json:"message"`
+	State   struct {
+		Status string
+	}
 }
