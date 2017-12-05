@@ -7,8 +7,12 @@ class TerminalComponent extends Component {
     console.log("props", props)
     this.state = {name: props.match.params.name}
   }
-  componentDidMount() {
-            var websocket = new WebSocket("ws://"+Config.host()+":"+Config.port()+"/workspaces/exec/"+this.state.name);
+  componentDidMount() { 
+            if(Config.relative) {
+                var websocket = new WebSocket("ws://"+window.location.host+"/workspaces/exec/"+this.state.name);
+            }else{
+               var websocket = new WebSocket("ws://"+Config.host()+":"+Config.port()+"/workspaces/exec/"+this.state.name);
+            }
             websocket.onopen = function(evt) {
                 console.log(Terminal)
                 var term = new Terminal({
