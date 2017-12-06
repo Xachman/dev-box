@@ -1,7 +1,0 @@
-name: cakephp3
-image: xachman/cakephp3
-volume: /projects
-ports:
-  - 80
-emvironment:
-  TEST: testval
