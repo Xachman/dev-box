@@ -23,10 +23,12 @@ class Dashboard extends Component {
   render() {
     return (
       <div className="animated fadeIn">
+        <div id="workspaces">
         {this.state.workspaces.map(function(item, index) {
           console.log("item", item);
           return <Workspace key={index} name={item.Name} />
         })}
+        </div>
       </div>
     )
   }
