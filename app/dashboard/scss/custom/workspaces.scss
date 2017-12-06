@@ -1,0 +1,18 @@
+#workspaces {
+    .workspace {
+        @include make-row();
+        margin-bottom: 1em;
+        .info {
+            @extend .col-md-2;
+            @include make-row();
+            .name, .status {
+                @extend .col-md-6;
+            }
+        }
+        .actions {
+            .btn {
+                margin-left: 0.5em;
+            }
+        }
+    }
+}
