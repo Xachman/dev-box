@@ -1,5 +1,6 @@
 export default class Config {
-static get relative() { return true }
+
+    static get relative() { return false}
     static get devBoxHost(){  return "localhost"}
     static get devBoxPort(){ return 9080 }
     static get protocol() { return "http" }
