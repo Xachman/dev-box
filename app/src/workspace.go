@@ -24,6 +24,7 @@ type Workspace struct {
 // Start starts Workspaces
 func (w *Workspace) Start() {
 	if !w.exists() {
+		w.pullImage()
 		config := GetConfig()
 		args := "{"
 
@@ -61,6 +62,9 @@ func (w *Workspace) Start() {
 func (w *Workspace) remove() {
 	w.Stop()
 	w.runCommand(fmt.Sprintf("/containers/%s", w.containerName()), "", "delete")
+}
+func (w *Workspace) pullImage() {
+	w.runCommand(fmt.Sprintf("/images/create?fromImage=%s", w.Image), "", "post")
 }
 func (w *Workspace) Stop() {
 	w.runCommand(fmt.Sprintf("/containers/%s/stop", w.containerName()), "", "post")
@@ -147,6 +151,7 @@ func (w *Workspace) runCommand(url string, args string, method string) (*APIResp
 			body, _ := ioutil.ReadAll(resp.Body)
 			apiR := new(APIResponse)
 			json.Unmarshal(body, &apiR)
+			fmt.Println(apiR.Message)
 			return apiR, err
 		}
 		defer resp.Body.Close()
