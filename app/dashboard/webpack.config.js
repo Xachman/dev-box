@@ -26,7 +26,7 @@ module.exports = (env = {}) => {
     devtool: env.prod ? 'source-map' : 'cheap-module-eval-source-map',
     devServer: {
       contentBase: BUILD_DIR,
-      port: 3000,
+      port: 3030,
       compress: true,
       hot: true,
       open: false
