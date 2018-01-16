@@ -155,7 +155,10 @@ func (c *Container) portmaps() string {
 	apiR, _ := c.runCommand(fmt.Sprintf("/containers/%s/json", c.containerName()), "", "get")
 	key := fmt.Sprintf("%d/tcp", c.Ports[0])
 	fmt.Println(key)
-	return apiR.NetworkSettings.Ports[key][0].HostPort
+	if val, ok := apiR.NetworkSettings.Ports[key]; ok {
+		return val[0].HostPort
+	}
+	return ""
 }
 func (c *Container) remove() {
 	c.stop()
