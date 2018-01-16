@@ -20,6 +20,11 @@ func main() {
 		DataDir: appPath + "/data/workspaces",
 	}
 
+	ideController := IDEController{
+		DataDir:      appPath + "/data/ides",
+		WorkspaceDir: appPath + "/data/workspaces",
+	}
+
 	http.Handle("/workspaces/exec/", websocket.Handler(workspaceController.ExecContainer))
 	http.HandleFunc("/workspaces/start/", workspaceController.StartContainer)
 	http.HandleFunc("/workspaces/stop/", workspaceController.StopContainer)
@@ -27,6 +32,8 @@ func main() {
 	http.HandleFunc("/workspaces/remove/", workspaceController.RemoveContainer)
 	http.HandleFunc("/workspaces/ports/", workspaceController.PortMaps)
 	http.HandleFunc("/workspaces", workspaceController.Index)
+
+	http.HandleFunc("/ides/start/", ideController.startIDE)
 	http.Handle("/", http.FileServer(http.Dir(appPath+"/public")))
 	http.ListenAndServe(":9080", nil)
 }
