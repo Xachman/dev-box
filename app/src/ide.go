@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 /*
 
 mount workspace files
@@ -12,6 +14,7 @@ start ide container
 type IDE struct {
 	Image     string
 	Ports     []int
+	Volume    string
 	Workspace Workspace
 }
 
@@ -22,5 +25,6 @@ func (ide *IDE) Start() {
 
 func (ide *IDE) getContainer() Container {
 	environment := make(map[string]string)
-	return NewContainer(ide.Image, ide.Workspace.Volume, "cloud9"+"_"+ide.Workspace.Name, ide.Workspace.VolumeDir, ide.Ports, environment)
+	fmt.Println(ide.Workspace.Volume)
+	return NewContainer(ide.Image, ide.Volume, "cloud9_"+ide.Workspace.Name, ide.Workspace.Name, ide.Ports, environment)
 }

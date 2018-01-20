@@ -13,12 +13,13 @@ import (
 
 // Container starts and stops containers
 type Container struct {
-	Image       string
-	Ports       []int
-	Volume      string
-	Name        string
-	VolumeDir   string
-	Environment map[string]string
+	Image         string
+	Ports         []int
+	Volume        string
+	Name          string
+	VolumeDir     string
+	Environment   map[string]string
+	ContainerName string
 }
 
 // NewContainer Creates container
@@ -42,8 +43,12 @@ func (c *Container) start() {
 		for _, value := range c.Ports {
 			args += fmt.Sprintf("\"PortBindings\": { \"%d/tcp\": [{ \"HostPort\": \"0\" }] },", value)
 		}
+		volumeDir := c.Name
+		if c.VolumeDir != "" {
+			volumeDir = c.VolumeDir
+		}
 		args += "\"Binds\": ["
-		args += fmt.Sprintf("\"%s/%s:%s\"", config.GetVolumeDir(), c.Name, c.Volume)
+		args += fmt.Sprintf("\"%s/%s:%s\"", config.GetVolumeDir(), volumeDir, c.Volume)
 		args += "]"
 		args += "},"
 
@@ -71,6 +76,7 @@ func (c *Container) start() {
 }
 func (c *Container) exists() bool {
 	apiR, _ := c.runCommand(fmt.Sprintf("/containers/%s/json", c.containerName()), "", "get")
+	fmt.Println("Message Exists: " + apiR.Message)
 	if apiR != nil && strings.TrimSpace(apiR.Message) == "" {
 		return true
 	}
@@ -144,7 +150,8 @@ func (c *Container) pullImage() {
 }
 
 func (c *Container) startContainer() {
-	c.runCommand(fmt.Sprintf("/containers/%s/start", c.containerName()), "", "post")
+	apiR, _ := c.runCommand(fmt.Sprintf("/containers/%s/start", c.containerName()), "", "post")
+	fmt.Println("Message: " + apiR.Message)
 }
 
 func (c *Container) containerName() string {

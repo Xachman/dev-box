@@ -18,7 +18,8 @@ type IDEController struct {
 func (idec *IDEController) startIDE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == "POST" {
-		cName := strings.TrimPrefix(r.URL.Path, "/ide/start/")
+		cName := strings.TrimPrefix(r.URL.Path, "/ides/start/")
+		fmt.Println("starting ide " + cName)
 		IDE := idec.getIDE(cName)
 
 		IDE.Start()
