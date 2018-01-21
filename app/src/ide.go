@@ -28,3 +28,17 @@ func (ide *IDE) getContainer() Container {
 	fmt.Println(ide.Workspace.Volume)
 	return NewContainer(ide.Image, ide.Volume, "cloud9_"+ide.Workspace.Name, ide.Workspace.Name, ide.Ports, environment)
 }
+
+func (ide *IDE) stop() {
+	c := ide.getContainer()
+	c.stop()
+}
+func (ide *IDE) ports() {
+	c := ide.getContainer()
+	return c.portmaps()
+}
+
+func (ide *IDE) remove() {
+	c := ide.getContainer()
+	c.remove()
+}

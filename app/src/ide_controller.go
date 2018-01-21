@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -15,7 +16,7 @@ type IDEController struct {
 	WorkspaceDir string
 }
 
-func (idec *IDEController) startIDE(w http.ResponseWriter, r *http.Request) {
+func (idec *IDEController) start(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == "POST" {
 		cName := strings.TrimPrefix(r.URL.Path, "/ides/start/")
@@ -29,6 +30,77 @@ func (idec *IDEController) startIDE(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (idec *IDEController) stop(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method == "POST" {
+		cName := strings.TrimPrefix(r.URL.Path, "/ides/stop/")
+		fmt.Println("starting ide " + cName)
+		IDE := idec.getIDE(cName)
+
+		IDE.stop()
+	} else {
+		fmt.Fprintf(w, "Bad Method")
+	}
+
+}
+func (idec *IDEController) remove(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method == "POST" {
+		cName := strings.TrimPrefix(r.URL.Path, "/ides/remove/")
+		fmt.Println("starting ide " + cName)
+		IDE := idec.getIDE(cName)
+
+		IDE.remove()
+	} else {
+		fmt.Fprintf(w, "Bad Method")
+	}
+
+}
+
+func (idec *IDEController) status(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method == "GET" {
+		cName := strings.TrimPrefix(r.URL.Path, "/ide/status/")
+		ide := idec.getIDE(cName)
+
+		wss := WorkspaceStatus{
+			Status: ide.status(),
+		}
+		json, err := json.Marshal(wss)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(json)
+	} else {
+		fmt.Fprintf(w, "Bad Method")
+	}
+}
+func (idec *IDEController) portMaps(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method == "GET" {
+		cName := strings.TrimPrefix(r.URL.Path, "/ide/status/")
+		ide := idec.getIDE(cName)
+
+		hostport := ide.ports()
+		config := GetConfig()
+		port := struct {
+			PortDomain string
+		}{
+			fmt.Sprintf("%s:%s", config.GetHost(), hostport),
+		}
+		json, err := json.Marshal(port)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(json)
+	} else {
+		fmt.Fprintf(w, "Bad Method")
+	}
+}
 func (idec *IDEController) getIDE(workspaceName string) IDE {
 	ide := IDE{}
 	ws := Workspace{}
