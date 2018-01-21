@@ -1,7 +1,7 @@
 export default class Config {
 
     static get relative() { return false}
-    static get devBoxHost(){  return "localhost"}
+    static get devBoxHost(){  return "192.168.1.151"}
     static get devBoxPort(){ return 9080 }
     static get protocol() { return "http" }
 
