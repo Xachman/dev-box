@@ -33,7 +33,10 @@ func main() {
 	http.HandleFunc("/workspaces/ports/", workspaceController.PortMaps)
 	http.HandleFunc("/workspaces", workspaceController.Index)
 
-	http.HandleFunc("/ides/start/", ideController.startIDE)
+	http.HandleFunc("/ides/start/", ideController.start)
+	http.HandleFunc("/ides/stop/", ideController.stop)
+	http.HandleFunc("/ides/ports/", ideController.portMaps)
+
 	http.Handle("/", http.FileServer(http.Dir(appPath+"/public")))
 	http.ListenAndServe(":9080", nil)
 }

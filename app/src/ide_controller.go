@@ -60,7 +60,7 @@ func (idec *IDEController) remove(w http.ResponseWriter, r *http.Request) {
 func (idec *IDEController) status(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == "GET" {
-		cName := strings.TrimPrefix(r.URL.Path, "/ide/status/")
+		cName := strings.TrimPrefix(r.URL.Path, "/ides/status/")
 		ide := idec.getIDE(cName)
 
 		wss := WorkspaceStatus{
@@ -80,10 +80,12 @@ func (idec *IDEController) status(w http.ResponseWriter, r *http.Request) {
 func (idec *IDEController) portMaps(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == "GET" {
-		cName := strings.TrimPrefix(r.URL.Path, "/ide/status/")
+		cName := strings.TrimPrefix(r.URL.Path, "/ides/ports/")
+
 		ide := idec.getIDE(cName)
 
 		hostport := ide.ports()
+		fmt.Println(hostport)
 		config := GetConfig()
 		port := struct {
 			PortDomain string

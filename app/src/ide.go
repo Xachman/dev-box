@@ -33,7 +33,11 @@ func (ide *IDE) stop() {
 	c := ide.getContainer()
 	c.stop()
 }
-func (ide *IDE) ports() {
+func (ide *IDE) status() string {
+	c := ide.getContainer()
+	return c.status()
+}
+func (ide *IDE) ports() string {
 	c := ide.getContainer()
 	return c.portmaps()
 }
