@@ -21,9 +21,9 @@ func (idec *IDEController) start(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		cName := strings.TrimPrefix(r.URL.Path, "/ides/start/")
 		fmt.Println("starting ide " + cName)
-		IDE := idec.getIDE(cName)
+		ide := idec.getIDE(cName)
 
-		IDE.Start()
+		ide.start()
 	} else {
 		fmt.Fprintf(w, "Bad Method")
 	}
@@ -84,7 +84,7 @@ func (idec *IDEController) portMaps(w http.ResponseWriter, r *http.Request) {
 
 		ide := idec.getIDE(cName)
 
-		hostport := ide.ports()
+		hostport := ide.portmaps()
 		fmt.Println(hostport)
 		config := GetConfig()
 		port := struct {
@@ -123,5 +123,6 @@ func (idec *IDEController) getIDE(workspaceName string) IDE {
 		log.Fatalf("error: %v", err)
 	}
 	ide.Workspace = ws
+	ide.setValues()
 	return ide
 }
