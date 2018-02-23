@@ -1,0 +1,4 @@
+image: kdelfour/cloud9-docker
+ports: 
+  - 80
+volume: /workspace

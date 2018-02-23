@@ -43,6 +43,9 @@ class Workspace extends Component {
         fetch(Config.dockerHostUrl()+"workspaces/remove/"+this.state.name, {method:"POST"}).then(() => this.getStatus(this.state.name))
     }
 
+    launchIde() {
+        fetch(Config.dockerHostUrl()+"workspaces/ide/cloud9/"+this.state.name, {method:"POST"}).then(() => this.getStatus(this.state.name))
+    }
     render() {
         console.log("state", this.state)
         return (
@@ -61,6 +64,7 @@ class Workspace extends Component {
                 <button className="stop btn btn-primary" onClick={this.removeContainer.bind(this)}>Remove</button>
                 <Link to={"/terminal/"+this.state.name} className="stop btn btn-primary" >Terminal</Link>
                 <a href={this.state.projecturl} className="stop btn btn-primary" >See Project</a>
+                <button className="stop btn btn-primary" onClick={this.launchIde.bind(this)}>IDE</button>
             </div>
         </div>
         )

@@ -3,15 +3,17 @@
         @include make-row();
         margin-bottom: 1em;
         .info {
-            @extend .col-md-2;
+            @extend .col-md-4;
             @include make-row();
             .name, .status {
                 @extend .col-md-6;
             }
         }
         .actions {
+            @extend .col-md-8;
             .btn {
                 margin-left: 0.5em;
+                padding: 0.5em;
             }
         }
     }
