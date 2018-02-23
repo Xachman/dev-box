@@ -3,3 +3,4 @@ app/data/config.yml
 app/data/workspaces
 default.prf
 docker-sync.yml
+.c9
