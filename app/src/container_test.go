@@ -10,20 +10,29 @@ func TestContainerStart(t *testing.T) {
 		"var": "key",
 		"var2": "key2",
 	}
-	type MockCallable struct {}
-	func (c MockCallable) call(url string, args string, method string) (*APIResponse, error) {
-		fmt.Println(url)
-		if url != "dude" {
-			t.Errorf()
-		}
-		return &APIResponse{}, nil
+	mock := MockCallable{
+		t: t,
+		test: AssertContainerStart,
 	}
-	mock := MockCallable{}
 	container := NewContainer("basic/image", "/src", "myname","/dest", []int{80, 8080}, stringMap, mock)
-    // if total != 10 {
-    //    t.Errorf("Sum was incorrect, got: %d, want: %d.", total, 10)
-	// }
-	container.start()
+	container.startContainer()
 	
 }
 
+func AssertContainerStart(url string, args string, method string, t *testing.T) {
+	fmt.Println(url)
+	config := GetConfig()
+	if url != fmt.Sprintf("/containers/%s_myname/start", config.GetNamespace()) {
+		t.Errorf("url expected dude got %s", url)
+	}
+}
+
+type MockCallable struct {
+	test func(url string, args string, method string, t *testing.T)
+	t *testing.T
+}
+
+func (c MockCallable) call(url string, args string, method string) (*APIResponse, error) {
+	c.test(url, args, method, c.t)
+	return &APIResponse{}, nil
+}
