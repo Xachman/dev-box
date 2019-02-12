@@ -1,13 +1,7 @@
 package main
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net"
-	"net/http"
 	"strings"
 )
 
@@ -20,10 +14,11 @@ type Container struct {
 	VolumeDir     string
 	Environment   map[string]string
 	ContainerName string
+	Caller 		  Callable
 }
 
 // NewContainer Creates container
-func NewContainer(img, vol, name, volDir string, ports []int, env map[string]string) Container {
+func NewContainer(img, vol, name, volDir string, ports []int, env map[string]string, caller Callable) Container {
 	return Container{
 		Image:       img,
 		Volume:      vol,
@@ -31,6 +26,7 @@ func NewContainer(img, vol, name, volDir string, ports []int, env map[string]str
 		VolumeDir:   volDir,
 		Ports:       ports,
 		Environment: env,
+		Caller: caller,
 	}
 }
 func (c *Container) start() {
@@ -74,6 +70,10 @@ func (c *Container) start() {
 
 	c.startContainer()
 }
+
+func (c *Container) runCommand(url string, args string, method string) (*APIResponse, error) {
+	return c.Caller.call(url, args, method)
+}
 func (c *Container) exists() bool {
 	apiR, _ := c.runCommand(fmt.Sprintf("/containers/%s/json", c.containerName()), "", "get")
 	fmt.Println("Message Exists: " + apiR.Message)
@@ -81,68 +81,6 @@ func (c *Container) exists() bool {
 		return true
 	}
 	return false
-}
-func (c *Container) runCommand(url string, args string, method string) (*APIResponse, error) {
-	///containers/create
-	///containers/(id or name)/start
-	httpc := http.Client{
-		Transport: &http.Transport{
-			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
-				return net.Dial("unix", "/var/run/docker.sock")
-			},
-		},
-	}
-	switch method {
-	case "post":
-		params := bytes.NewBufferString(args)
-		resp, err := httpc.Post("http://unix"+url, "application/json", params)
-		if err != nil {
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			apiR := new(APIResponse)
-			json.Unmarshal(body, &apiR)
-			return apiR, err
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		apiR := new(APIResponse)
-		json.Unmarshal(body, &apiR)
-		return apiR, nil
-	case "get":
-		resp, err := httpc.Get("http://unix" + url)
-		if err != nil {
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			apiR := new(APIResponse)
-			json.Unmarshal(body, &apiR)
-			return apiR, err
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		apiR := new(APIResponse)
-		json.Unmarshal(body, &apiR)
-		return apiR, err
-	case "delete":
-		req, err := http.NewRequest("DELETE", "http://unix"+url, nil)
-		if err != nil {
-			panic(err)
-		}
-		resp, err := httpc.Do(req)
-		if err != nil {
-			defer resp.Body.Close()
-			body, _ := ioutil.ReadAll(resp.Body)
-			apiR := new(APIResponse)
-			json.Unmarshal(body, &apiR)
-			fmt.Println(apiR.Message)
-			return apiR, err
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		apiR := new(APIResponse)
-		json.Unmarshal(body, &apiR)
-		return apiR, err
-	}
-	return nil, nil
 }
 
 func (c *Container) pullImage() {

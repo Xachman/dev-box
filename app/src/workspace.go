@@ -16,7 +16,7 @@ func (w *Workspace) Start() {
 	c.start()
 }
 func (w *Workspace) getContainer() Container {
-	return NewContainer(w.Image, w.Volume, w.Name, w.VolumeDir, w.Ports, w.Environment)
+	return NewContainer(w.Image, w.Volume, w.Name, w.VolumeDir, w.Ports, w.Environment, Docker{})
 }
 func (w *Workspace) launchIde(ide string) {
 
