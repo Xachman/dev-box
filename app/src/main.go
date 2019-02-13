@@ -24,6 +24,8 @@ func main() {
 		DataDir:      appPath + "/data/ides",
 		WorkspaceDir: appPath + "/data/workspaces",
 	}
+	containerController := ContainerController{}
+	http.HandleFunc("/container/start/", containerController.Start)
 
 	http.Handle("/workspaces/exec/", websocket.Handler(workspaceController.ExecContainer))
 	http.HandleFunc("/workspaces/start/", workspaceController.StartContainer)
