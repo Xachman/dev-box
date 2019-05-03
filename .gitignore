@@ -5,3 +5,4 @@ default.prf
 docker-sync.yml
 .c9
 *.a
+.vscode
